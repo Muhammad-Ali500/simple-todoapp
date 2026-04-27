@@ -123,5 +123,4 @@ def toggle(todo_id):
 
 if __name__ == '__main__':
     init_db()
-    server = make_server('0.0.0.0', 7890, app)
-    server.serve_forever()
+    app.run(host='0.0.0.0', port=3434, debug=False)
