@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <style>
+        body { font-family: Arial; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f0f2f5; }
+        .container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 360px; }
+        h2 { text-align: center; margin-top: 0; }
+        #display { width: 100%; padding: 12px; font-size: 1.4rem; text-align: right; box-sizing: border-box; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; }
+        .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        button { padding: 16px; font-size: 1.1rem; border: none; border-radius: 6px; cursor: pointer; background: #e4e6eb; }
+        button:hover { background: #d0d3d9; }
+        button.op { background: #f7a700; color: white; }
+        button.op:hover { background: #d99000; }
+        button.eq { background: #1877f2; color: white; grid-column: span 2; }
+        button.eq:hover { background: #1464c7; }
+        button.clr { background: #e41e3f; color: white; }
+        button.clr:hover { background: #c01832; }
+        #error { color: red; text-align: center; margin-top: 8px; min-height: 1.4em; }
+        #history { margin-top: 16px; border-top: 1px solid #ddd; padding-top: 12px; max-height: 200px; overflow-y: auto; }
+        #history h3 { margin: 0 0 8px 0; font-size: 1rem; }
+        #history div { font-size: 0.9rem; padding: 4px 0; color: #555; border-bottom: 1px solid #f0f0f0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Calculator</h2>
+        <input type="text" id="display" readonly>
+        <div class="buttons">
+            <button onclick="press('7')">7</button>
+            <button onclick="press('8')">8</button>
+            <button onclick="press('9')">9</button>
+            <button class="op" onclick="press('/')">/</button>
+            <button onclick="press('4')">4</button>
+            <button onclick="press('5')">5</button>
+            <button onclick="press('6')">6</button>
+            <button class="op" onclick="press('*')">*</button>
+            <button onclick="press('1')">1</button>
+            <button onclick="press('2')">2</button>
+            <button onclick="press('3')">3</button>
+            <button class="op" onclick="press('-')">-</button>
+            <button onclick="press('0')">0</button>
+            <button onclick="press('.')">.</button>
+            <button class="eq" onclick="calculate()">=</button>
+            <button class="op" onclick="press('+')">+</button>
+            <button class="clr" onclick="clearDisplay()">C</button>
+        </div>
+        <div id="error"></div>
+        <div id="history">
+            <h3>History</h3>
+        </div>
+    </div>
+
+    <script>
+        function press(val) {
+            const d = document.getElementById('display');
+            d.value += val;
+        }
+
+        function clearDisplay() {
+            document.getElementById('display').value = '';
+            document.getElementById('error').textContent = '';
+        }
+
+        async function calculate() {
+            const expr = document.getElementById('display').value;
+            if (!expr) return;
+            try {
+                const res = await fetch('/calculate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({expression: expr})
+                });
+                const data = await res.json();
+                if (data.error) {
+                    document.getElementById('error').textContent = data.error;
+                } else {
+                    document.getElementById('display').value = data.result;
+                    document.getElementById('error').textContent = '';
+                    loadHistory();
+                }
+            } catch (e) {
+                document.getElementById('error').textContent = 'Network error';
+            }
+        }
+
+        async function loadHistory() {
+            try {
+                const res = await fetch('/history');
+                const data = await res.json();
+                const el = document.getElementById('history');
+                el.innerHTML = '<h3>History</h3>';
+                data.forEach(item => {
+                    const d = document.createElement('div');
+                    d.textContent = `${item.expression} = ${item.result}  (${item.created_at})`;
+                    el.appendChild(d);
+                });
+            } catch (e) {}
+        }
+
+        document.addEventListener('keydown', e => {
+            if ('0123456789+-*/.'.includes(e.key)) press(e.key);
+            if (e.key === 'Enter') calculate();
+            if (e.key === 'Escape') clearDisplay();
+        });
+
+        loadHistory();
+    </script>
+</body>
+</html>
