@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo App</title>
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>Todo App</h1>
+
+        <div class="status-bar">
+            <span class="badge db-badge">SQLite</span>
+            <span class="badge" id="redis-badge">Redis: checking...</span>
+        </div>
+
+        <form id="todo-form" class="todo-form">
+            <input type="text" id="todo-title" placeholder="What needs to be done?" required />
+            <input type="text" id="todo-desc" placeholder="Description (optional)" />
+            <button type="submit">Add</button>
+        </form>
+
+        <div class="stats" id="stats">
+            <span>Total: <strong id="stat-total">0</strong></span>
+            <span>Done: <strong id="stat-done">0</strong></span>
+            <span>Pending: <strong id="stat-pending">0</strong></span>
+            <span class="cached" id="stat-cached"></span>
+        </div>
+
+        <ul class="todo-list" id="todo-list"></ul>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
